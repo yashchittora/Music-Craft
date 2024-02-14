@@ -7,3 +7,4 @@
 ![ScreenShot](Screenshot1.png "Dark Mode")
 ![ScreenShot](Screenshot2.png "Light Mode")
 ![ScreenShot](Screenshot3.png "No Backgroud")
+![ScreenShot](Screenshot4.png "Full Screen")
