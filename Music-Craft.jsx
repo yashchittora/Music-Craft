@@ -1,9 +1,11 @@
 //Made with Love by Yash Chittora [github.com/yashchittora]
+
 //isDarkMode = true: Text is white and background is black
 //isDarkMode = false: Text is black and background is white
 // ~~~ USER SETTINGS ~~~
 const isDarkMode = true;
 const showBackground = false;
+const layoutPosition = "bottomLeft"; // Options: "topCenter", "topLeft", "topRight", "bottomCenter", "bottomLeft", "bottomRight"
 
 // --- WIDGET CODE ---
 // Linking of the Music Icon
@@ -16,14 +18,53 @@ document.head.appendChild(faScript);
 import { run } from "uebersicht";
 import { css } from "uebersicht";
 
+// Margin variables for different positions
+const margins = {
+  topCenter: {
+    marginRight: "auto",
+    marginLeft: "auto",
+    marginBottom: "auto",
+  },
+  topLeft: {
+    marginRight: "auto",
+    marginLeft: "2vw",
+    marginBottom: "auto",
+  },
+  topRight: {
+    marginRight: "2vw",
+    marginLeft: "auto",
+    marginBottom: "auto",
+  },
+  bottomCenter: {
+    marginTop: "auto",
+    marginRight: "auto",
+    marginLeft: "auto",
+    marginBottom: "2vh",
+  },
+  bottomLeft: {
+    marginTop: "auto",
+    marginRight: "auto",
+    marginLeft: "2vw",
+    marginBottom: "2vh",
+  },
+  bottomRight: {
+    marginTop: "auto",
+    marginRight: "2vw",
+    marginLeft: "auto",
+  },
+};
+
+const selectedMargins = margins[layoutPosition];
+
 const container = css`
   display: flex;
   justify-content: center;
-  alligh-items: center;
+  align-items: center;
   width: 100vw;
-  top: 2%;
+  height: 100vh;
   animation: fadeIn 1s linear;
-
+  pointer-events: none;
+  user-select: none;
   @keyframes fadeIn {
     0% {
       opacity: 0;
@@ -36,31 +77,33 @@ const container = css`
 
 const darkModeStyles = isDarkMode
   ? css`
-      background-color: black; // For true
-      color: white; // For true
+      background-color: black;
+      color: white;
     `
   : css`
-      background-color: white; // For false
-      color: black; // For false
+      background-color: white;
+      color: black;
     `;
 
 const backgroundStyles = showBackground
-  ? css`
-      //If true Nothing to change
-    `
+  ? css``
   : css`
       background-color: rgba(0, 0, 0, 0);
     `;
 
 const text = css`
+  margin-top: ${selectedMargins.marginTop};
+  margin-right: ${selectedMargins.marginRight};
+  margin-left: ${selectedMargins.marginLeft};
+  margin-bottom: ${selectedMargins.marginBottom};
   padding-left: 20px;
   padding-right: 20px;
   padding-top: 5px;
   padding-bottom: 7px;
   font-size: 14px;
-  color: white; //Default text color
+  color: white;
   font-family: futura;
-  background-color: black; // Default Background color
+  background-color: black;
   border-radius: 32px;
   user-select: none;
   cursor: default;
@@ -72,7 +115,7 @@ const text = css`
 const isAppleMusicRunning = async () => {
   try {
     const result = await run(
-      'osascript -e \'tell application "System Events" to (name of processes) contains "Music"\'',
+      'osascript -e "tell application \"System Events\" to (name of processes) contains \"Music\""'
     );
     return result.trim() === "true";
   } catch (error) {
@@ -85,10 +128,9 @@ const isAppleMusicRunning = async () => {
 const getAppleMusicInfo = async () => {
   try {
     const isRunning = await isAppleMusicRunning();
-
     if (isRunning) {
       const result = await run(
-        'osascript -e \'tell application "Music" to if player state is playing then return artist of current track & " - " & name of current track\'',
+        'osascript -e "tell application \"Music\" to if player state is playing then return artist of current track & \" - \" & name of current track"'
       );
       return result.trim();
     } else {
@@ -106,7 +148,7 @@ export const command = async (dispatch) => {
   dispatch({ type: "SET_INFO", appleMusicInfo });
 };
 
-export const refreshFrequency = 1000; // Refreshes the widget (milli-seconds)
+export const refreshFrequency = 1000;
 
 export const initialState = { appleMusicInfo: "" };
 
@@ -122,19 +164,8 @@ export const updateState = (event, previousState) => {
 // Structure of the widget
 export const render = ({ appleMusicInfo }, dispatch) => {
   const displayInfo = appleMusicInfo || "No music playing";
-
-  // Function to handle the click event
-  const handleClick = async () => {
-    try {
-      // Open the Music app using osascript
-      await run("osascript -e 'tell application \"Music\" to activate'");
-    } catch (error) {
-      console.error("Error opening Music app:", error);
-    }
-  };
-
   return (
-    <div className={container} onClick={handleClick}>
+    <div className={container}>
       <p className={text}>
         <i className="fas fa-music"></i> {displayInfo}
       </p>
